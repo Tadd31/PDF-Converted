@@ -1,0 +1,6 @@
+{
+  "name": "Kelly's Folio Illuminator",
+  "description": "An offline-first, Shakespearean-themed tool crafted for Kelly to illuminate and customize PDF color profiles locally in-browser.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
