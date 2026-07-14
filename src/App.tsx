@@ -7,6 +7,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   FileText,
+  Home,
   Sparkles,
   Download,
   Trash2,
@@ -243,7 +244,11 @@ export default function App() {
       {/* Top Header Navigation */}
       <header className="bg-black border-b border-white/10 px-6 py-4 shrink-0 relative z-20">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div 
+            onClick={pdfDoc ? handleCloseFile : undefined}
+            className={`flex items-center gap-3 ${pdfDoc ? 'cursor-pointer hover:opacity-80' : ''} transition-all`}
+            title={pdfDoc ? "Return to upload zone" : undefined}
+          >
             <div className="p-2 bg-zinc-900 border border-white/10 text-[#CCFF00] rounded-xl shadow-md">
               <FileText size={22} className="stroke-[2]" />
             </div>
@@ -256,6 +261,19 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Home Icon navigation button (Active when document loaded) */}
+            {pdfDoc && (
+              <button
+                id="home-nav-btn"
+                onClick={handleCloseFile}
+                className="text-[10px] font-bold text-zinc-400 hover:text-white hover:border-[#CCFF00]/30 transition-all flex items-center gap-1.5 cursor-pointer uppercase tracking-wider font-mono border border-white/10 rounded-lg px-2.5 py-1.5 bg-zinc-900/60"
+                title="Return to upload zone"
+              >
+                <Home size={13} className="text-[#CCFF00]" />
+                <span className="hidden sm:inline">Home</span>
+              </button>
+            )}
+
             {/* FAQ and Info toggle */}
             <button
               id="faq-btn"
