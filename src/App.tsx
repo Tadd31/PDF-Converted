@@ -244,12 +244,16 @@ export default function App() {
       {/* Top Header Navigation */}
       <header className="bg-black border-b border-white/10 px-6 py-4 shrink-0 relative z-20">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div 
-            onClick={pdfDoc ? handleCloseFile : undefined}
-            className={`flex items-center gap-3 ${pdfDoc ? 'cursor-pointer hover:opacity-80' : ''} transition-all`}
-            title={pdfDoc ? "Return to upload zone" : undefined}
-          >
-            <div className="p-2 bg-zinc-900 border border-white/10 text-[#CCFF00] rounded-xl shadow-md">
+          <div className="flex items-center gap-3">
+            <div 
+              onClick={pdfDoc ? handleCloseFile : undefined}
+              className={`p-2 bg-zinc-900 border border-white/10 text-[#CCFF00] rounded-xl shadow-md transition-all ${
+                pdfDoc 
+                  ? 'cursor-pointer hover:bg-zinc-800 hover:border-[#CCFF00]/40 active:scale-95 hover:text-white' 
+                  : ''
+              }`}
+              title={pdfDoc ? "Return to upload zone" : undefined}
+            >
               <FileText size={22} className="stroke-[2]" />
             </div>
             <div>
