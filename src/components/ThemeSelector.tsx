@@ -70,58 +70,58 @@ export function ThemeSelector({ config, onChange }: ThemeSelectorProps) {
             </button>
           );
         })}
-      </div>
 
-      {/* Special/Utility Modes Grid */}
-      <div className="grid grid-cols-3 gap-3">
-        {/* Grayscale */}
+        {/* Gray Monologue */}
         <button
           id="mode-grayscale"
           onClick={() => handleModeChange('grayscale')}
-          className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all cursor-pointer ${
+          className={`group flex flex-col p-4 rounded-xl border transition-all duration-200 text-left relative cursor-pointer ${
             currentMode === 'grayscale'
-              ? 'border-[#CCFF00] bg-zinc-900 text-white'
-              : 'border-white/5 hover:border-white/15 bg-[#161616] text-zinc-300'
+              ? 'border-[#CCFF00] bg-zinc-900 text-white shadow-[0_0_15px_rgba(204,255,0,0.1)]'
+              : 'border-white/5 hover:border-white/15 hover:bg-zinc-900/40 bg-[#161616] text-zinc-300'
           }`}
         >
-          <span className="text-[10px] font-bold uppercase tracking-wider">Gray Monologue</span>
-          <div className="flex gap-1 mt-2">
-            <div className="w-3 h-3 rounded-full bg-zinc-400 border border-white/10" />
-            <div className="w-3 h-3 rounded-full bg-zinc-700 border border-white/10" />
+          <div className="flex gap-1.5 items-center justify-between w-full">
+            <span className={`text-xs font-bold uppercase tracking-wider group-hover:text-white transition-colors ${currentMode === 'grayscale' ? 'text-[#CCFF00]' : 'text-zinc-200'}`}>
+              Gray Monologue
+            </span>
+            <div className="flex -space-x-1.5 shrink-0">
+              <div
+                className="w-4 h-4 rounded-full border border-white/10 shadow-sm bg-zinc-700"
+                title="Background"
+              />
+              <div
+                className="w-4 h-4 rounded-full border border-white/10 shadow-sm bg-zinc-400"
+                title="Text"
+              />
+            </div>
           </div>
         </button>
 
-        {/* Contrast B&W */}
-        <button
-          id="mode-contrast-bw"
-          onClick={() => handleModeChange('contrast_bw')}
-          className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all cursor-pointer ${
-            currentMode === 'contrast_bw'
-              ? 'border-[#CCFF00] bg-zinc-900 text-white'
-              : 'border-white/5 hover:border-white/15 bg-[#161616] text-zinc-300'
-          }`}
-        >
-          <span className="text-[10px] font-bold uppercase tracking-wider text-center">Stark Soliloquy</span>
-          <div className="flex gap-1 mt-2">
-            <div className="w-3 h-3 rounded-full bg-white border border-white/10" />
-            <div className="w-3 h-3 rounded-full bg-black border border-white/10" />
-          </div>
-        </button>
-
-        {/* Raw Inversion */}
+        {/* Raw Alchemy */}
         <button
           id="mode-invert-raw"
           onClick={() => handleModeChange('invert_raw')}
-          className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all cursor-pointer ${
+          className={`group flex flex-col p-4 rounded-xl border transition-all duration-200 text-left relative cursor-pointer ${
             currentMode === 'invert_raw'
-              ? 'border-[#CCFF00] bg-zinc-900 text-white'
-              : 'border-white/5 hover:border-white/15 bg-[#161616] text-zinc-300'
+              ? 'border-[#CCFF00] bg-zinc-900 text-white shadow-[0_0_15px_rgba(204,255,0,0.1)]'
+              : 'border-white/5 hover:border-white/15 hover:bg-zinc-900/40 bg-[#161616] text-zinc-300'
           }`}
         >
-          <span className="text-[10px] font-bold uppercase tracking-wider text-center">Raw Alchemy</span>
-          <div className="flex gap-1 mt-2">
-            <div className="w-3 h-3 rounded-full bg-amber-400 border border-white/10" />
-            <div className="w-3 h-3 rounded-full bg-indigo-600 border border-white/10" />
+          <div className="flex gap-1.5 items-center justify-between w-full">
+            <span className={`text-xs font-bold uppercase tracking-wider group-hover:text-white transition-colors ${currentMode === 'invert_raw' ? 'text-[#CCFF00]' : 'text-zinc-200'}`}>
+              Raw Alchemy
+            </span>
+            <div className="flex -space-x-1.5 shrink-0">
+              <div
+                className="w-4 h-4 rounded-full border border-white/10 shadow-sm bg-indigo-600"
+                title="Background"
+              />
+              <div
+                className="w-4 h-4 rounded-full border border-white/10 shadow-sm bg-amber-400"
+                title="Text"
+              />
+            </div>
           </div>
         </button>
       </div>

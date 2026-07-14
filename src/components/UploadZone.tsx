@@ -11,9 +11,17 @@ interface UploadZoneProps {
   onFileSelect: (file: File) => void;
   pdfJsLoaded: boolean;
   pdfJsError: string | null;
+  isParsing?: boolean;
+  parsingFileName?: string;
 }
 
-export function UploadZone({ onFileSelect, pdfJsLoaded, pdfJsError }: UploadZoneProps) {
+export function UploadZone({
+  onFileSelect,
+  pdfJsLoaded,
+  pdfJsError,
+  isParsing = false,
+  parsingFileName,
+}: UploadZoneProps) {
   const [isDragActive, setIsDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -92,54 +100,104 @@ export function UploadZone({ onFileSelect, pdfJsLoaded, pdfJsError }: UploadZone
           onChange={handleChange}
         />
 
-        <div className="flex flex-col items-center justify-center space-y-8 relative z-10">
-          <motion.div
-            animate={{ y: isDragActive ? -6 : 0 }}
-            transition={{ repeat: Infinity, repeatType: "reverse", duration: 1.5, ease: "easeInOut" }}
-            className={`w-20 h-20 border-2 rounded-full flex items-center justify-center transition-all ${
-              isDragActive ? 'border-[#CCFF00] bg-zinc-900 text-[#CCFF00]' : 'border-white/10 text-white/40 bg-zinc-950/60'
-            }`}
-          >
-            <FileUp size={32} className="stroke-[1.5]" />
-          </motion.div>
-
-          <div className="space-y-3">
-            <h2 className="text-3xl font-black uppercase tracking-tight text-white">
-              Present Thy PDF Scroll
-            </h2>
-            <p className="text-xs text-zinc-400 max-w-sm mx-auto font-mono uppercase tracking-widest leading-relaxed">
-              Drop thy parchment here or click below to search thy keep
-            </p>
-          </div>
-
-          <div className="pt-2">
-            <button
-              id="upload-button"
-              type="button"
-              onClick={onButtonClick}
-              disabled={!pdfJsLoaded}
-              className={`px-8 py-4 rounded-xl font-black uppercase tracking-wider text-sm italic transition-all flex items-center gap-2 shadow-[4px_4px_0_rgba(204,255,0,0.15)] hover:shadow-[6px_6px_0_rgba(204,255,0,0.25)] active:translate-x-1 active:translate-y-1 active:shadow-none ${
-                pdfJsLoaded
-                  ? 'bg-[#CCFF00] text-black hover:bg-[#b5e600] cursor-pointer'
-                  : 'bg-zinc-800 text-zinc-500 cursor-not-allowed shadow-none'
-              }`}
+        <div className="flex flex-col items-center justify-center space-y-8 relative z-10 w-full">
+          {isParsing ? (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="flex flex-col items-center justify-center space-y-6 py-4 w-full"
             >
-              {!pdfJsLoaded ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-zinc-500 border-t-transparent rounded-full animate-spin" />
-                  <span>Loading Alchemical Engine...</span>
-                </div>
-              ) : (
-                <span>Select PDF Folio</span>
-              )}
-            </button>
-          </div>
+              {/* Spinning / processing alchemical circles */}
+              <div className="relative w-24 h-24 flex items-center justify-center">
+                {/* Outer spinning dashed ring */}
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }}
+                  className="absolute inset-0 border-4 border-dashed border-[#CCFF00] rounded-full opacity-60"
+                />
+                {/* Inner spinning dotted ring */}
+                <motion.div
+                  animate={{ rotate: -360 }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                  className="absolute inset-2 border-2 border-dotted border-indigo-400 rounded-full opacity-80"
+                />
+                {/* Center pulsing core with active file icon */}
+                <motion.div
+                  animate={{ scale: [1, 1.12, 1] }}
+                  transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
+                  className="w-14 h-14 bg-zinc-950 border border-white/10 rounded-full flex items-center justify-center text-[#CCFF00] shadow-[0_0_15px_rgba(204,255,0,0.2)]"
+                >
+                  <FileUp size={24} className="stroke-[2] animate-bounce" />
+                </motion.div>
+              </div>
 
-          {pdfJsError && (
-            <div className="p-3 bg-red-950/40 border border-red-900/50 text-red-400 text-xs rounded-xl mt-4 max-w-md font-mono text-left">
-              <p className="font-bold uppercase tracking-wider text-red-500">Engine Error:</p>
-              <p className="mt-1">{pdfJsError}</p>
-            </div>
+              <div className="space-y-2 text-center max-w-md">
+                <h3 className="text-xl font-black uppercase tracking-widest text-[#CCFF00] flex items-center justify-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#CCFF00] animate-ping" />
+                  Transcribing Scroll...
+                </h3>
+                {parsingFileName && (
+                  <p className="text-xs font-mono text-zinc-300 truncate max-w-xs md:max-w-md mx-auto bg-zinc-900/60 border border-white/5 rounded-lg px-3 py-1.5 inline-block">
+                    {parsingFileName}
+                  </p>
+                )}
+                <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">
+                  Gently converting vectors, fonts & lines local to thy CPU
+                </p>
+              </div>
+            </motion.div>
+          ) : (
+            <>
+              <motion.div
+                animate={{ y: isDragActive ? -6 : 0 }}
+                transition={{ repeat: Infinity, repeatType: "reverse", duration: 1.5, ease: "easeInOut" }}
+                className={`w-20 h-20 border-2 rounded-full flex items-center justify-center transition-all ${
+                  isDragActive ? 'border-[#CCFF00] bg-zinc-900 text-[#CCFF00]' : 'border-white/10 text-white/40 bg-zinc-950/60'
+                }`}
+              >
+                <FileUp size={32} className="stroke-[1.5]" />
+              </motion.div>
+
+              <div className="space-y-3">
+                <h2 className="text-3xl font-black uppercase tracking-tight text-white">
+                  Present Thy PDF Scroll
+                </h2>
+                <p className="text-xs text-zinc-400 max-w-sm mx-auto font-mono uppercase tracking-widest leading-relaxed">
+                  Drop thy parchment here or click below to search thy keep
+                </p>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  id="upload-button"
+                  type="button"
+                  onClick={onButtonClick}
+                  disabled={!pdfJsLoaded}
+                  className={`px-8 py-4 rounded-xl font-black uppercase tracking-wider text-sm italic transition-all flex items-center gap-2 shadow-[4px_4px_0_rgba(204,255,0,0.15)] hover:shadow-[6px_6px_0_rgba(204,255,0,0.25)] active:translate-x-1 active:translate-y-1 active:shadow-none ${
+                    pdfJsLoaded
+                      ? 'bg-[#CCFF00] text-black hover:bg-[#b5e600] cursor-pointer'
+                      : 'bg-zinc-800 text-zinc-500 cursor-not-allowed shadow-none'
+                  }`}
+                >
+                  {!pdfJsLoaded ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-zinc-500 border-t-transparent rounded-full animate-spin" />
+                      <span>Loading Alchemical Engine...</span>
+                    </div>
+                  ) : (
+                    <span>Select PDF Folio</span>
+                  )}
+                </button>
+              </div>
+
+              {pdfJsError && (
+                <div className="p-3 bg-red-950/40 border border-red-900/50 text-red-400 text-xs rounded-xl mt-4 max-w-md font-mono text-left">
+                  <p className="font-bold uppercase tracking-wider text-red-500">Engine Error:</p>
+                  <p className="mt-1">{pdfJsError}</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </motion.div>

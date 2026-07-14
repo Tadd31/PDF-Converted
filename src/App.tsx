@@ -52,6 +52,7 @@ export default function App() {
 
   // App States
   const [loadedFile, setLoadedFile] = useState<File | null>(null);
+  const [isParsing, setIsParsing] = useState<boolean>(false);
   const [pdfDoc, setPdfDoc] = useState<any | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [config, setConfig] = useState<FilterConfig>(defaultConfig);
@@ -75,6 +76,7 @@ export default function App() {
   const handleFileSelect = async (file: File) => {
     try {
       setLoadedFile(file);
+      setIsParsing(true);
       const arrayBuffer = await file.arrayBuffer();
 
       // Load with window.pdfjsLib
@@ -91,6 +93,8 @@ export default function App() {
       alert(`Could not parse PDF. It might be corrupted or encrypted. Error: ${err.message || String(err)}`);
       setLoadedFile(null);
       setPdfDoc(null);
+    } finally {
+      setIsParsing(false);
     }
   };
 
@@ -321,6 +325,8 @@ export default function App() {
                   onFileSelect={handleFileSelect}
                   pdfJsLoaded={pdfJsLoaded}
                   pdfJsError={pdfJsError}
+                  isParsing={isParsing}
+                  parsingFileName={loadedFile?.name}
                 />
               </motion.div>
             ) : (
