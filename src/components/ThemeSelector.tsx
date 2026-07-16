@@ -3,8 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { useState, useEffect } from 'react';
 import { PRESETS, FilterConfig, FilterMode, Preset } from '../utils/colorFilter';
-import { Settings, RefreshCw } from 'lucide-react';
+import { Settings, RefreshCw, Bookmark, Trash2, Check, Save, Sparkles } from 'lucide-react';
+import { getUserPresets, saveUserPreset, deleteUserPreset, UserPreset } from '../utils/savedPresets';
 
 interface ThemeSelectorProps {
   config: FilterConfig;
@@ -13,6 +15,14 @@ interface ThemeSelectorProps {
 
 export function ThemeSelector({ config, onChange }: ThemeSelectorProps) {
   const currentMode = config.mode;
+  const [userPresets, setUserPresets] = useState<UserPreset[]>([]);
+  const [presetName, setPresetName] = useState<string>('');
+  const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+
+  // Load user presets on component mount
+  useEffect(() => {
+    setUserPresets(getUserPresets());
+  }, []);
 
   const handleModeChange = (mode: FilterMode) => {
     onChange({ mode });
@@ -20,6 +30,45 @@ export function ThemeSelector({ config, onChange }: ThemeSelectorProps) {
 
   const handleCustomColorChange = (key: 'customBg' | 'customFg', value: string) => {
     onChange({ [key]: value });
+  };
+
+  const handleSavePreset = () => {
+    const trimmedName = presetName.trim();
+    const finalName = trimmedName || 'Custom Preset';
+    
+    const newPreset: UserPreset = {
+      id: 'user_' + Date.now(),
+      name: finalName,
+      customBg: config.customBg,
+      customFg: config.customFg,
+      brightness: config.brightness,
+      contrast: config.contrast,
+      grayscale: config.grayscale,
+      hueRotate: config.hueRotate,
+    };
+
+    const updated = saveUserPreset(newPreset);
+    setUserPresets(updated);
+    setPresetName('');
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 3000);
+  };
+
+  const handleDeleteUserPreset = (id: string) => {
+    const updated = deleteUserPreset(id);
+    setUserPresets(updated);
+  };
+
+  const handleSelectUserPreset = (p: UserPreset) => {
+    onChange({
+      mode: 'custom',
+      customBg: p.customBg,
+      customFg: p.customFg,
+      brightness: p.brightness,
+      contrast: p.contrast,
+      grayscale: p.grayscale,
+      hueRotate: p.hueRotate,
+    });
   };
 
   const presetList = Object.values(PRESETS);
@@ -225,8 +274,117 @@ export function ThemeSelector({ config, onChange }: ThemeSelectorProps) {
               <span>Invert Canvas Hues</span>
             </button>
           </div>
+
+          {/* Save Custom Preset block */}
+          <div className="mt-4 pt-4 border-t-2 border-dashed border-black/20">
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] font-black uppercase tracking-wider text-black block">
+                Save as Custom Preset
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="e.g. Neon Mint, Dark Gold..."
+                  value={presetName}
+                  onChange={(e) => setPresetName(e.target.value)}
+                  className="flex-1 text-xs font-mono bg-white border-2 border-black rounded-none px-2.5 py-1.5 text-black focus:border-[#FF003C] focus:outline-none placeholder-zinc-400"
+                />
+                <button
+                  type="button"
+                  onClick={handleSavePreset}
+                  className="px-3 py-1.5 bg-[#FF003C] hover:bg-red-700 text-white font-display font-black text-xs uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center gap-1 cursor-pointer shrink-0"
+                >
+                  <Save size={12} />
+                  <span>Save</span>
+                </button>
+              </div>
+              {saveSuccess && (
+                <span className="text-[9px] text-green-600 font-bold uppercase tracking-wider flex items-center gap-1 mt-0.5">
+                  <Check size={10} className="stroke-[3]" />
+                  Preset Saved!
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* User's Saved Custom Presets */}
+      {userPresets.length > 0 && (
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center gap-2 pb-2 border-b-2 border-dashed border-black/20">
+            <Bookmark size={14} className="text-[#FF003C] stroke-[2.5]" />
+            <h4 className="text-xs font-display font-black text-black uppercase tracking-wider">
+              My Saved Presets
+            </h4>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {userPresets.map((p) => {
+              const isActive = currentMode === 'custom' && 
+                config.customBg.toLowerCase() === p.customBg.toLowerCase() &&
+                config.customFg.toLowerCase() === p.customFg.toLowerCase() &&
+                config.brightness === p.brightness &&
+                config.contrast === p.contrast &&
+                config.grayscale === p.grayscale &&
+                config.hueRotate === p.hueRotate;
+
+              return (
+                <div
+                  key={p.id}
+                  className={`group relative flex items-center justify-between border-2 rounded-none p-2.5 transition-all duration-200 text-left ${
+                    isActive
+                      ? 'border-black bg-black text-white shadow-[2px_2px_0px_#FF003C]'
+                      : 'border-black hover:bg-zinc-100 bg-white text-zinc-800 shadow-[2px_2px_0px_rgba(0,0,0,1)]'
+                  }`}
+                >
+                  {/* Clickable Preset Area */}
+                  <button
+                    type="button"
+                    onClick={() => handleSelectUserPreset(p)}
+                    className="flex-1 flex items-center justify-between pr-2 text-left cursor-pointer overflow-hidden"
+                  >
+                    <div className="flex flex-col min-w-0 pr-1">
+                      <span className={`text-[11px] font-mono font-black uppercase tracking-wide truncate ${isActive ? 'text-[#FF003C]' : 'text-black'}`}>
+                        {p.name}
+                      </span>
+                      <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider font-mono">
+                        {p.customBg} / {p.customFg}
+                      </span>
+                    </div>
+                    
+                    {/* Swatch info */}
+                    <div className="flex -space-x-1 shrink-0">
+                      <div
+                        className="w-3.5 h-3.5 border border-black shadow-sm shrink-0"
+                        style={{ backgroundColor: p.customBg }}
+                      />
+                      <div
+                        className="w-3.5 h-3.5 border border-black shadow-sm shrink-0"
+                        style={{ backgroundColor: p.customFg }}
+                      />
+                    </div>
+                  </button>
+
+                  {/* Delete button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteUserPreset(p.id);
+                    }}
+                    className={`p-1 border border-transparent hover:border-black transition-all cursor-pointer rounded-none shrink-0 ${
+                      isActive ? 'text-zinc-400 hover:text-white hover:bg-red-800' : 'text-zinc-400 hover:text-[#FF003C] hover:bg-red-50'
+                    }`}
+                    title="Delete preset"
+                  >
+                    <Trash2 size={12} className="stroke-[2.5]" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

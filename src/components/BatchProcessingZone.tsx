@@ -508,6 +508,9 @@ export function BatchProcessingZone({
               <p>&gt; Choose a screentone preset & fine-tune depth controls.</p>
               <p>&gt; Every page is filtered client-side sequentially.</p>
               <p>&gt; You get a single compressed ZIP file containing all tailored files.</p>
+              <p className="text-[#FF003C] mt-2 pt-2 border-t border-black/15 font-bold">
+                💡 TIP: Since batch processing doesn't provide a live preview, try a single document first to find the best filters!
+              </p>
             </div>
           </MangaPanel>
         </div>

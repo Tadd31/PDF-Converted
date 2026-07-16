@@ -3,7 +3,7 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Anton", "Bebas Neue", sans-serif;
+  --font-display: "Bebas Neue", "Anton", sans-serif;
   --font-brush: "Permanent Marker", cursive;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
@@ -11,6 +11,9 @@
 .manga-slanted {
   display: inline-block;
   transform: skewX(-8deg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 .layered-ink {

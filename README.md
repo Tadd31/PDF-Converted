@@ -2,7 +2,7 @@
 
 > ### *High-Contrast PDF Style Converter*
 
-**InkShift** (白黒 - *Shirokuro*) is a beautiful, local-first, high-contrast PDF reader and style converter designed to transform blindingly bright documents and manga tankōbon into high-contrast, dark-mode masterpieces. 
+**InkShift** (白黒 - *Shirokuro*) is a beautiful, local-first, high-contrast PDF reader and style converter designed to transform blindingly bright documents, scans, and digital books into high-contrast, dark-mode masterpieces. 
 
 Unlike crude, standard browser inversion—which ruins covers, muddies ink, and destroys illustrations—InkShift uses advanced, high-fidelity pixel-mapping filters to preserve color relationships while gracefully mapping bright backdrops into elegant, dark, or custom-toned sheets.
 
@@ -12,14 +12,14 @@ Unlike crude, standard browser inversion—which ruins covers, muddies ink, and 
 
 - ⚡ **Graceful Color Inversion**: Preserves colored splash pages, covers, and original illustration colors while gracefully darkening paper backgrounds.
 - 🔒 **Absolute Local Security**: Your documents never leave your machine! All rendering, conversion, and assembly run entirely inside your browser's local sandbox. No servers, no tracking, and 100% offline-capable.
-- 🎨 **Manga-Themed Presets (Shirokuro 白黒)**:
-  - **InkShift**: Deep newsprint charcoal optimized for manga screentone contrast, preserving full-page splash art.
+- 🎨 **High-Contrast Stylized Presets (Shirokuro 白黒)**:
+  - **InkShift**: Deep newsprint charcoal optimized for rich screentones, preserving full-page artwork and illustrations.
   - **Cyber Tokyo**: Deep midnight blue background reminiscent of Neo-Tokyo, with electric cyber-blue highlight ink.
-  - **Classic Tankōbon**: Aged pulpy paper and soft warm manga ink, replicating vintage tankōbon print editions.
+  - **Classic Tankōbon**: Aged pulpy paper and soft warm dark ink, replicating classic vintage print editions.
   - **Mecha HUD**: Tactical cockpit screen green glow, from inside a giant piloting suit.
   - **Neo Noir**: Sleek dark-teal cyberpunk tone, relaxing to the eyes.
-  - **Manga Café**: Rich dark espresso canvas with cozy cream-toned text for hours of peaceful reading.
-- 📥 **High-Resolution Assembly**: Re-compile and export your newly illuminated manga chapters or PDF pages at customizable resolutions (Standard, High, or Max Resolution).
+  - **Manga Café**: Rich dark espresso canvas with cozy cream-toned text for hours of relaxed reading.
+- 📥 **High-Resolution Assembly**: Re-compile and export your newly illuminated PDF pages or documents at customizable resolutions (Standard, High, or Max Resolution).
 
 ***
 
