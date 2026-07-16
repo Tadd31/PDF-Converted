@@ -1,6 +1,6 @@
 {
-  "name": "Kelly's Folio Illuminator",
-  "description": "An offline-first, Shakespearean-themed tool crafted for Kelly to illuminate and customize PDF color profiles locally in-browser.",
+  "name": "InkShift: High-Contrast PDF Style Converter",
+  "description": "An offline-first, screentone-themed tool crafted to optimize and customize PDF profiles locally in-browser with high-contrast, high-fidelity light screentone filters and printed paper textures.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

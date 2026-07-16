@@ -16,6 +16,7 @@ import {
   HelpCircle,
   FileDown,
   ExternalLink,
+  Laptop,
 } from 'lucide-react';
 
 import { usePdfJs } from './hooks/usePdfJs';
@@ -28,6 +29,11 @@ import { PdfViewer } from './components/PdfViewer';
 import { ThemeSelector } from './components/ThemeSelector';
 import { AdjustmentPanel } from './components/AdjustmentPanel';
 import { ExportModal } from './components/ExportModal';
+import { InstallModal } from './components/InstallModal';
+import { ImpactBurst, MangaSoundEffect } from './components/ImpactBurst';
+import { MangaPanel } from './components/MangaPanel';
+import { MangaBackground } from './components/MangaBackground';
+import { BatchProcessingZone } from './components/BatchProcessingZone';
 
 const defaultConfig: FilterConfig = {
   mode: 'invert_smart',
@@ -57,6 +63,7 @@ export default function App() {
   const [pdfDoc, setPdfDoc] = useState<any | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [config, setConfig] = useState<FilterConfig>(defaultConfig);
+  const [isBatchMode, setIsBatchMode] = useState<boolean>(false);
 
   // Export States
   const [quality, setQuality] = useState<1.5 | 3.0 | 4.0>(3.0);
@@ -70,8 +77,55 @@ export default function App() {
   const [exportTotalPages, setExportTotalPages] = useState<number>(0);
   const [exportStatus, setExportStatus] = useState<string>('');
   const [showFaq, setShowFaq] = useState<boolean>(false);
+  const [showInstallModal, setShowInstallModal] = useState<boolean>(false);
 
   const cancelExportRef = useRef<boolean>(false);
+
+  // Manga Visual Sound Effects State
+  const [mangaEffects, setMangaEffects] = useState<MangaSoundEffect[]>([]);
+
+  const triggerMangaEffect = (text: string, size: 'sm' | 'md' | 'lg' | 'xl' = 'md', color?: string) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    // Position within safe margins of the screen
+    const x = 25 + Math.random() * 50; // 25% to 75%
+    const y = 25 + Math.random() * 50; // 25% to 75%
+    const rotation = -20 + Math.random() * 40; // -20 to +20 degrees
+    setMangaEffects((prev) => [
+      ...prev,
+      { id, text, x, y, size, rotation, color }
+    ]);
+  };
+
+  const handleRemoveEffect = (id: string) => {
+    setMangaEffects((prev) => prev.filter((effect) => effect.id !== id));
+  };
+
+  // Monitor page changes for sound effect
+  const lastPageRef = useRef<number>(currentPage);
+  useEffect(() => {
+    if (pdfDoc && lastPageRef.current !== currentPage) {
+      lastPageRef.current = currentPage;
+      triggerMangaEffect('SHHHP!', 'sm', '#FF003C');
+    }
+  }, [currentPage, pdfDoc]);
+
+  // Monitor theme/mode switches
+  const lastModeRef = useRef<string>(config.mode);
+  useEffect(() => {
+    if (lastModeRef.current !== config.mode) {
+      lastModeRef.current = config.mode;
+      triggerMangaEffect('ZAP!', 'sm', '#FFFFFF');
+    }
+  }, [config.mode]);
+
+  // Monitor faq/logic toggle
+  const lastFaqRef = useRef<boolean>(showFaq);
+  useEffect(() => {
+    if (lastFaqRef.current !== showFaq) {
+      lastFaqRef.current = showFaq;
+      triggerMangaEffect('SLAM!', 'sm', '#FF003C');
+    }
+  }, [showFaq]);
 
   // Parse uploaded file with PDF.js
   const handleFileSelect = async (file: File) => {
@@ -89,6 +143,7 @@ export default function App() {
       const doc = await loadingTask.promise;
       setPdfDoc(doc);
       setCurrentPage(1);
+      triggerMangaEffect('BOOM!', 'lg', '#FF003C');
     } catch (err: any) {
       console.error('Error parsing PDF file:', err);
       alert(`Could not parse PDF. It might be corrupted or encrypted. Error: ${err.message || String(err)}`);
@@ -117,6 +172,7 @@ export default function App() {
   const handleExportPdf = async () => {
     if (!pdfDoc) return;
 
+    triggerMangaEffect('KA-POW!', 'xl', '#FF003C');
     setIsExporting(true);
     setExportProgress(0);
     setExportStatus('Initializing compiler session...');
@@ -239,59 +295,68 @@ export default function App() {
     }
   };
 
+  const isModeDark = 
+    config.mode === 'invert_raw' || 
+    config.mode === 'contrast_bw' || 
+    (config.mode in PRESETS && PRESETS[config.mode as keyof typeof PRESETS]?.isDark);
+
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-zinc-100 flex flex-col font-sans selection:bg-[#CCFF00] selection:text-black">
+    <div 
+      className="min-h-screen transition-colors duration-300 flex flex-col font-sans selection:bg-[#FF003C] selection:text-white relative bg-white text-black screentone-bg"
+    >
+      {/* Infinite, non-repeating concentric halftone background with anti-cut protection */}
+      <MangaBackground isDark={isModeDark} />
       {/* Top Header Navigation */}
-      <header className="bg-black border-b border-white/10 px-6 py-4 shrink-0 relative z-20">
+      <header className="bg-white border-b-8 border-double border-black px-6 py-4 shrink-0 relative z-20">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div 
               onClick={pdfDoc ? handleCloseFile : undefined}
-              className={`p-2 bg-zinc-900 border border-white/10 text-[#CCFF00] rounded-xl shadow-md transition-all ${
+              className={`p-2 bg-white border-2 border-black text-[#FF003C] rounded-lg shadow-[2px_2px_0px_#000000] transition-all ${
                 pdfDoc 
-                  ? 'cursor-pointer hover:bg-zinc-800 hover:border-[#CCFF00]/40 active:scale-95 hover:text-white' 
+                  ? 'cursor-pointer hover:bg-zinc-100 active:scale-95' 
                   : ''
               }`}
               title={pdfDoc ? "Return to upload zone" : undefined}
             >
-              <FileText size={22} className="stroke-[2]" />
+              <FileText size={22} className="stroke-[2.5]" />
             </div>
             <div>
-              <h1 className="text-xl font-black text-white tracking-tighter uppercase italic flex items-center gap-2">
-                Kelly's <span className="text-[#CCFF00]">Folio Illuminator</span>
+              <h1 className="text-3xl font-display font-black text-black tracking-wider flex items-center gap-1.5 leading-none">
+                INK<span className="text-[#FF003C] font-brush text-2xl lowercase font-normal leading-none rotate-[-2deg] inline-block">Shift</span>
               </h1>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">"To read, or not to read, that is no longer a question of eye strain."</p>
+              <p className="text-[10px] text-zinc-700 uppercase tracking-widest font-mono font-bold mt-0.5">"HIGH-CONTRAST PDF STYLE CONVERTER"</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Home Icon navigation button (Active when document loaded) */}
-            {pdfDoc && (
-              <button
-                id="home-nav-btn"
-                onClick={handleCloseFile}
-                className="text-[10px] font-bold text-zinc-400 hover:text-white hover:border-[#CCFF00]/30 transition-all flex items-center gap-1.5 cursor-pointer uppercase tracking-wider font-mono border border-white/10 rounded-lg px-2.5 py-1.5 bg-zinc-900/60"
-                title="Return to upload zone"
-              >
-                <Home size={13} className="text-[#CCFF00]" />
-                <span className="hidden sm:inline">Home</span>
-              </button>
-            )}
+          <div className="flex items-center gap-3 sm:gap-4">
+            {/* Install App button */}
+            <button
+              id="install-btn"
+              onClick={() => {
+                setShowInstallModal(true);
+                triggerMangaEffect('STANDALONE!', 'md', '#FF003C');
+              }}
+              className="text-[10px] font-bold text-black hover:bg-zinc-50 transition-all flex items-center gap-1.5 cursor-pointer uppercase tracking-wider font-mono border-2 border-black rounded-lg px-2.5 py-1.5 bg-white shadow-[2px_2px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+            >
+              <Laptop size={13} className="text-[#FF003C] stroke-[2.5]" />
+              <span>Install App</span>
+            </button>
 
             {/* FAQ and Info toggle */}
             <button
               id="faq-btn"
               onClick={() => setShowFaq(!showFaq)}
-              className="text-[10px] font-bold text-zinc-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer uppercase tracking-wider font-mono border border-white/10 rounded-lg px-2.5 py-1.5 bg-zinc-900/60"
+              className="text-[10px] font-bold text-black hover:bg-zinc-50 transition-all flex items-center gap-1.5 cursor-pointer uppercase tracking-wider font-mono border-2 border-black rounded-lg px-2.5 py-1.5 bg-white shadow-[2px_2px_0px_#FF003C] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
             >
-              <HelpCircle size={13} className="text-[#CCFF00]" />
-              <span className="hidden sm:inline">The Bard's Logic</span>
+              <HelpCircle size={13} className="text-[#FF003C] stroke-[2.5]" />
+              <span className="hidden sm:inline">The Screentone Logic</span>
             </button>
 
             {/* Engine loading status indicator */}
-            <div className="hidden md:flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400 font-mono bg-zinc-900/40 border border-white/5 rounded-full px-3 py-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#CCFF00] animate-pulse" />
-              <span>Local Keep Active</span>
+            <div className="hidden md:flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-black font-mono bg-white border-2 border-black rounded-full px-3.5 py-1.5 shadow-[2px_2px_0px_#000000]">
+              <span className="w-2 h-2 rounded-full bg-[#FF003C] animate-pulse" />
+              <span>Engine Active</span>
             </div>
           </div>
         </div>
@@ -308,26 +373,28 @@ export default function App() {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden mb-6"
             >
-              <div className="bg-[#111111] rounded-2xl border border-white/10 p-6 shadow-xl grid grid-cols-1 md:grid-cols-2 gap-6 font-mono">
-                <div>
-                  <h3 className="font-black text-white text-xs uppercase tracking-wider mb-2.5 flex items-center gap-2 text-[#CCFF00]">
-                    <Sparkles size={14} />
-                    Preserve the Bard's Print
-                  </h3>
-                  <p className="text-[11px] text-zinc-400 leading-relaxed uppercase tracking-wide">
-                    Rather than crude negation which tarnisheth illustrations and plates, our alchemical math preserves hue and contrast. Pure inks are re-mapped gracefully to eye-soothing tones.
-                  </p>
+              <MangaPanel variant="red" noPadding className="shadow-xl font-mono">
+                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="font-display font-black text-[#FF003C] text-lg uppercase tracking-wide mb-2 flex items-center gap-2">
+                      <Sparkles size={16} className="stroke-[2.5]" />
+                      PRESERVE THE SCREENTONES
+                    </h3>
+                    <p className="text-[11px] text-zinc-800 leading-relaxed uppercase tracking-wider font-bold">
+                      Rather than crude negation which destroys color cover pages and muddies screentones, our custom matrices preserve details. Ink depths are re-mapped elegantly while original hues stand out.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-display font-black text-[#FF003C] text-lg uppercase tracking-wide mb-2 flex items-center gap-2">
+                      <Check size={16} className="stroke-[2.5]" />
+                      SECURED ON LOCAL DEVICE
+                    </h3>
+                    <p className="text-[11px] text-zinc-800 leading-relaxed uppercase tracking-wider font-bold">
+                      Your PDF files are processed entirely in your browser sandbox. No chapters, pages, or files are ever sent to external cloud servers.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-black text-white text-xs uppercase tracking-wider mb-2.5 flex items-center gap-2 text-[#CCFF00]">
-                    <Check size={14} />
-                    Secured Within Thy Keep
-                  </h3>
-                  <p className="text-[11px] text-zinc-400 leading-relaxed uppercase tracking-wide">
-                    Thy documents are loaded locally in thy browser's own library. No parchment or scroll is sent to servers beyond the seas. The alchemy runs entirely upon thy own engine.
-                  </p>
-                </div>
-              </div>
+              </MangaPanel>
             </motion.div>
           )}
         </AnimatePresence>
@@ -337,19 +404,81 @@ export default function App() {
             {!pdfDoc ? (
               // Dashboard / Upload Screen
               <motion.div
-                key="upload-zone-wrapper"
+                key="dashboard-zone-wrapper"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex-1 flex items-center justify-center py-8"
+                className="flex-1 flex flex-col py-4"
               >
-                <UploadZone
-                  onFileSelect={handleFileSelect}
-                  pdfJsLoaded={pdfJsLoaded}
-                  pdfJsError={pdfJsError}
-                  isParsing={isParsing}
-                  parsingFileName={loadedFile?.name}
-                />
+                {/* Tabs switcher */}
+                <div className="flex justify-center mb-8">
+                  <div className="inline-flex rounded-lg border-2 border-black p-1 bg-zinc-100 shadow-[3px_3px_0px_rgba(0,0,0,1)]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsBatchMode(false);
+                        triggerMangaEffect('SHING!', 'sm', '#FF003C');
+                      }}
+                      className={`px-6 py-2.5 text-xs font-display font-black uppercase tracking-wider transition-all cursor-pointer ${
+                        !isBatchMode
+                          ? 'bg-black text-white shadow-[2px_2px_0px_rgba(255,0,60,1)]'
+                          : 'text-zinc-600 hover:text-black'
+                      }`}
+                    >
+                      Single Document Reader
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsBatchMode(true);
+                        triggerMangaEffect('CLANG!', 'sm', '#FF003C');
+                      }}
+                      className={`px-6 py-2.5 text-xs font-display font-black uppercase tracking-wider transition-all cursor-pointer ${
+                        isBatchMode
+                          ? 'bg-black text-white shadow-[2px_2px_0px_rgba(255,0,60,1)]'
+                          : 'text-zinc-650 hover:text-black'
+                      }`}
+                    >
+                      Batch Converter (ZIP)
+                    </button>
+                  </div>
+                </div>
+
+                <AnimatePresence mode="wait">
+                  {!isBatchMode ? (
+                    <motion.div
+                      key="single-upload"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="flex-1 flex items-center justify-center py-4"
+                    >
+                      <UploadZone
+                        onFileSelect={handleFileSelect}
+                        pdfJsLoaded={pdfJsLoaded}
+                        pdfJsError={pdfJsError}
+                        isParsing={isParsing}
+                        parsingFileName={loadedFile?.name}
+                      />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="batch-upload"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="w-full py-4"
+                    >
+                      <BatchProcessingZone
+                        pdfJsLoaded={pdfJsLoaded}
+                        pdfJsError={pdfJsError}
+                        config={config}
+                        onConfigChange={handleConfigChange}
+                        triggerMangaEffect={triggerMangaEffect}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             ) : (
               // Active Editor Layout (Split view)
@@ -362,25 +491,34 @@ export default function App() {
               >
                 {/* Left side: Interactive Viewer Stage (8 cols) */}
                 <div className="lg:col-span-8 flex flex-col min-h-[450px] lg:min-h-0">
-                  <PdfViewer pdfDoc={pdfDoc} config={config} currentPage={currentPage} setCurrentPage={setCurrentPage} />
+                  <PdfViewer 
+                    pdfDoc={pdfDoc} 
+                    config={config} 
+                    currentPage={currentPage} 
+                    setCurrentPage={setCurrentPage} 
+                    onShowInstallInstructions={() => {
+                      setShowInstallModal(true);
+                      triggerMangaEffect('STANDALONE!', 'md', '#FF003C');
+                    }}
+                  />
                 </div>
 
                 {/* Right side: Color Profiler & Export Panel (4 cols) */}
-                <div className="lg:col-span-4 flex flex-col gap-5 overflow-y-auto pr-1">
+                <div className="lg:col-span-4 flex flex-col gap-6 overflow-y-auto pr-1">
                   {/* Document Card */}
-                  <div className="bg-[#111] rounded-2xl border border-white/5 p-4 shadow-md shrink-0">
-                    <div className="flex items-start justify-between gap-3">
+                  <MangaPanel noPadding className="shrink-0 shadow-md">
+                    <div className="p-4 flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="p-2.5 bg-zinc-900 border border-white/10 text-[#CCFF00] rounded-xl shrink-0">
-                          <FileText size={18} />
+                        <div className="p-2.5 bg-white border-2 border-black text-[#FF003C] rounded-lg shrink-0 shadow-[2px_2px_0px_#000000]">
+                          <FileText size={18} className="stroke-[2.5]" />
                         </div>
                         <div className="min-w-0">
-                          <h3 className="text-xs font-bold uppercase tracking-wider text-white truncate" title={loadedFile?.name}>
+                          <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-black truncate" title={loadedFile?.name}>
                             {loadedFile?.name}
                           </h3>
-                          <div className="flex items-center gap-2 mt-1 text-[9px] font-mono uppercase tracking-widest text-zinc-500">
+                          <div className="flex items-center gap-2 mt-1 text-[9px] font-mono uppercase tracking-widest text-zinc-700 font-bold">
                             <span>{pdfDoc ? pdfDoc.numPages : 0} Pages</span>
-                            <span className="text-[#CCFF00]">•</span>
+                            <span className="text-[#FF003C] font-black">•</span>
                             <span>{loadedFile ? formatBytes(loadedFile.size) : '0 KB'}</span>
                           </div>
                         </div>
@@ -389,126 +527,138 @@ export default function App() {
                       <button
                         id="close-file-btn"
                         onClick={handleCloseFile}
-                        className="p-2 rounded-xl border border-white/5 hover:border-red-900/50 hover:bg-red-950/20 text-zinc-500 hover:text-red-400 transition-all cursor-pointer"
+                        className="p-2 rounded-lg border-2 border-black bg-white hover:bg-red-50 text-zinc-800 hover:text-red-600 transition-all cursor-pointer shadow-[2px_2px_0px_#000000]"
                         title="Close File"
                       >
-                        <Trash2 size={13} />
+                        <Trash2 size={13} className="stroke-[2]" />
                       </button>
                     </div>
-                  </div>
+                  </MangaPanel>
 
                   {/* Core Theme Options */}
-                  <div className="bg-[#111] rounded-2xl border border-white/5 p-5 shadow-md">
+                  <MangaPanel className="shadow-md">
                     <ThemeSelector config={config} onChange={handleConfigChange} />
-                  </div>
+                  </MangaPanel>
 
                   {/* Sliders Panel */}
                   <AdjustmentPanel config={config} onChange={handleConfigChange} />
 
                   {/* Export Options & Actions */}
-                  <div className="bg-[#111] rounded-2xl border border-white/5 p-5 shadow-md space-y-5">
+                  <MangaPanel className="shadow-md space-y-5">
                     {/* Header */}
-                    <div className="flex items-center gap-2 pb-3 border-b border-white/10">
-                      <FileDown size={15} className="text-[#CCFF00]" />
-                      <h4 className="text-xs font-black text-white uppercase tracking-widest">
-                        Folio Binding Settings
+                    <div className="flex items-center gap-2 pb-3 border-b-3 border-black">
+                      <FileDown size={18} className="text-[#FF003C] stroke-[2.5]" />
+                      <h4 className="text-sm font-display font-black text-black uppercase tracking-wider">
+                        PDF Assembly Settings
                       </h4>
                     </div>
 
                     {/* Export Quality Selection */}
                     <div className="space-y-2.5">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block font-mono">
-                        Illumination Resolution
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-800 block font-mono">
+                        Plate DPI Scale
                       </label>
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pb-2">
                         {/* Compact */}
                         <button
                           id="quality-standard"
                           type="button"
                           onClick={() => setQuality(1.5)}
-                          className={`p-3 rounded-xl border transition-all text-center cursor-pointer ${
+                          className={`py-2.5 px-1 sm:p-3 rounded-none border-3 transition-all text-center cursor-pointer ${
                             quality === 1.5
-                              ? 'border-[#CCFF00] bg-zinc-900 text-[#CCFF00]'
-                              : 'border-white/5 bg-[#161616] text-zinc-400 hover:border-white/15'
+                              ? 'border-black bg-black text-white manga-shadow-red font-black'
+                              : 'border-black bg-zinc-50 text-zinc-700 hover:bg-zinc-100 manga-shadow font-bold'
                           }`}
                         >
-                          <span className="text-xs font-black uppercase tracking-wider block">Standard</span>
-                          <span className="text-[9px] font-mono uppercase tracking-tight opacity-80 mt-0.5 block">1.5x / Fast</span>
+                          <span className="text-[10px] sm:text-xs font-display uppercase tracking-wider block">Standard</span>
+                          <span className={`text-[8px] sm:text-[9px] font-mono uppercase tracking-tight mt-0.5 block font-bold ${quality === 1.5 ? 'text-zinc-300' : 'text-zinc-600'}`}>
+                            <span className="hidden sm:inline">1.5x / Fast</span>
+                            <span className="inline sm:hidden">1.5x</span>
+                          </span>
                         </button>
-
+ 
                         {/* High */}
                         <button
                           id="quality-high"
                           type="button"
                           onClick={() => setQuality(3.0)}
-                          className={`p-3 rounded-xl border transition-all text-center cursor-pointer ${
+                          className={`py-2.5 px-1 sm:p-3 rounded-none border-3 transition-all text-center cursor-pointer ${
                             quality === 3.0
-                              ? 'border-[#CCFF00] bg-zinc-900 text-[#CCFF00]'
-                              : 'border-white/5 bg-[#161616] text-zinc-400 hover:border-white/15'
+                              ? 'border-black bg-black text-white manga-shadow-red font-black'
+                              : 'border-black bg-zinc-50 text-zinc-700 hover:bg-zinc-100 manga-shadow font-bold'
                           }`}
                         >
-                          <span className="text-xs font-black uppercase tracking-wider block">Retina</span>
-                          <span className="text-[9px] font-mono uppercase tracking-tight opacity-80 mt-0.5 block">3.0x / Sharp</span>
+                          <span className="text-[10px] sm:text-xs font-display uppercase tracking-wider block">Retina</span>
+                          <span className={`text-[8px] sm:text-[9px] font-mono uppercase tracking-tight mt-0.5 block font-bold ${quality === 3.0 ? 'text-zinc-300' : 'text-zinc-600'}`}>
+                            <span className="hidden sm:inline">3.0x / Sharp</span>
+                            <span className="inline sm:hidden">3.0x</span>
+                          </span>
                         </button>
-
+ 
                         {/* Ultra */}
                         <button
                           id="quality-ultra"
                           type="button"
                           onClick={() => setQuality(4.0)}
-                          className={`p-3 rounded-xl border transition-all text-center cursor-pointer ${
+                          className={`py-2.5 px-1 sm:p-3 rounded-none border-3 transition-all text-center cursor-pointer ${
                             quality === 4.0
-                              ? 'border-[#CCFF00] bg-zinc-900 text-[#CCFF00]'
-                              : 'border-white/5 bg-[#161616] text-zinc-400 hover:border-white/15'
+                              ? 'border-black bg-black text-white manga-shadow-red font-black'
+                              : 'border-black bg-zinc-50 text-zinc-700 hover:bg-zinc-100 manga-shadow font-bold'
                           }`}
                         >
-                          <span className="text-xs font-black uppercase tracking-wider block">Max</span>
-                          <span className="text-[9px] font-mono uppercase tracking-tight opacity-80 mt-0.5 block">4.0x / Heavy</span>
+                          <span className="text-[10px] sm:text-xs font-display uppercase tracking-wider block">Max</span>
+                          <span className={`text-[8px] sm:text-[9px] font-mono uppercase tracking-tight mt-0.5 block font-bold ${quality === 4.0 ? 'text-zinc-300' : 'text-zinc-600'}`}>
+                            <span className="hidden sm:inline">4.0x / Heavy</span>
+                            <span className="inline sm:hidden">4.0x</span>
+                          </span>
                         </button>
                       </div>
                     </div>
-
+ 
                     {/* Page Range Setting */}
                     <div className="space-y-2.5">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block font-mono">
-                        Folio Pages to Bind
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-800 block font-mono">
+                        Pages to Assemble
                       </label>
-                      <div className="grid grid-cols-3 gap-1 p-1 bg-zinc-950 rounded-xl border border-white/5">
+                      <div className="grid grid-cols-3 gap-1 p-0.5 sm:p-1 bg-zinc-100 rounded-lg border-2 border-black">
                         <button
                           id="range-all"
                           type="button"
                           onClick={() => setPageRangeMode('all')}
-                          className={`py-2 px-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer text-center ${
+                          className={`py-2 px-0.5 sm:px-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider rounded transition-all cursor-pointer text-center ${
                             pageRangeMode === 'all'
-                              ? 'bg-zinc-900 text-[#CCFF00] border border-white/5'
-                              : 'text-zinc-500 hover:text-zinc-300'
+                              ? 'bg-white text-black border-2 border-black shadow-[2px_2px_0px_#FF003C]'
+                              : 'text-zinc-600 hover:text-black'
                           }`}
                         >
-                          Whole Folio
+                          <span className="hidden sm:inline">Whole Doc</span>
+                          <span className="inline sm:hidden">All</span>
                         </button>
                         <button
                           id="range-current"
                           type="button"
                           onClick={() => setPageRangeMode('current')}
-                          className={`py-2 px-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer text-center ${
+                          className={`py-2 px-0.5 sm:px-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider rounded transition-all cursor-pointer text-center ${
                             pageRangeMode === 'current'
-                              ? 'bg-zinc-900 text-[#CCFF00] border border-white/5'
-                              : 'text-zinc-500 hover:text-zinc-300'
+                              ? 'bg-white text-black border-2 border-black shadow-[2px_2px_0px_#FF003C]'
+                              : 'text-zinc-600 hover:text-black'
                           }`}
                         >
-                          Active Sheet
+                          <span className="hidden sm:inline">Active Page</span>
+                          <span className="inline sm:hidden">Current</span>
                         </button>
                         <button
                           id="range-custom"
                           type="button"
                           onClick={() => setPageRangeMode('custom')}
-                          className={`py-2 px-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer text-center ${
+                          className={`py-2 px-0.5 sm:px-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider rounded transition-all cursor-pointer text-center ${
                             pageRangeMode === 'custom'
-                              ? 'bg-zinc-900 text-[#CCFF00] border border-white/5'
-                              : 'text-zinc-500 hover:text-zinc-300'
+                              ? 'bg-white text-black border-2 border-black shadow-[2px_2px_0px_#FF003C]'
+                              : 'text-zinc-600 hover:text-black'
                           }`}
                         >
-                          Select Leaves
+                          <span className="hidden sm:inline">Select Range</span>
+                          <span className="inline sm:hidden">Custom</span>
                         </button>
                       </div>
 
@@ -525,10 +675,10 @@ export default function App() {
                             placeholder="e.g. 1-4, 7, 10-15"
                             value={customRangeStr}
                             onChange={(e) => setCustomRangeStr(e.target.value)}
-                            className="w-full text-xs font-mono bg-zinc-950 border border-white/10 rounded-lg px-3 py-2 text-zinc-200 placeholder:text-zinc-600 focus:border-[#CCFF00] focus:outline-none"
+                            className="w-full text-xs font-mono bg-white border-2 border-black rounded-lg px-3 py-2 text-black placeholder:text-zinc-400 focus:border-[#FF003C] focus:outline-none focus:ring-0"
                           />
-                          <span className="text-[9px] font-mono uppercase tracking-tight text-zinc-500 block mt-1.5 px-0.5">
-                            List leaves with commas, ranges with dashes (e.g. 1-4, 7).
+                          <span className="text-[9px] font-mono uppercase tracking-tight text-zinc-700 block mt-1.5 px-0.5 font-bold">
+                            List pages with commas, ranges with dashes (e.g. 1-4, 7).
                           </span>
                         </motion.div>
                       )}
@@ -540,13 +690,13 @@ export default function App() {
                         id="download-full-pdf-btn"
                         type="button"
                         onClick={handleExportPdf}
-                        className="w-full bg-[#CCFF00] text-black hover:bg-[#b5e600] py-4 px-4 rounded-xl font-black uppercase tracking-wider italic shadow-[4px_4px_0_rgba(204,255,0,0.15)] hover:shadow-[6px_6px_0_rgba(204,255,0,0.25)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+                        className="w-full bg-[#FF003C] text-white hover:bg-red-700 py-4 px-4 border-3 border-black rounded-none font-display font-black uppercase tracking-wider text-lg italic shadow-[4px_4px_0_rgba(0,0,0,1)] hover:shadow-[6px_6px_0_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
                       >
-                        <Download size={15} />
-                        <span>Bind & Deliver Folio</span>
+                        <Download size={16} className="stroke-[2.5]" />
+                        <span>Assemble & Download PDF</span>
                       </button>
                     </div>
-                  </div>
+                  </MangaPanel>
                 </div>
               </motion.div>
             )}
@@ -566,6 +716,15 @@ export default function App() {
           setExportStatus('Sending cancellation request...');
         }}
       />
+
+      <InstallModal
+        isOpen={showInstallModal}
+        onClose={() => setShowInstallModal(false)}
+        triggerMangaEffect={triggerMangaEffect}
+      />
+
+      {/* Manga Visual Sound Effects overlay */}
+      <ImpactBurst effects={mangaEffects} onComplete={handleRemoveEffect} />
     </div>
   );
 }

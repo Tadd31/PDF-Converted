@@ -1,29 +1,31 @@
-# 📖 Kelly's Folio Illuminator
+# ☯️ InkShift
 
-> *"To read, or not to read, that is no longer a question of eye strain."*
+> ### *High-Contrast PDF Style Converter*
 
-**Kelly's Folio Illuminator** is a beautiful, local-first, alchemical PDF reader designed to transform blindingly bright documents into high-contrast, dark-mode folios. 
+**InkShift** (白黒 - *Shirokuro*) is a beautiful, local-first, high-contrast PDF reader and style converter designed to transform blindingly bright documents and manga tankōbon into high-contrast, dark-mode masterpieces. 
 
-Unlike crude, standard browser inversion—which ruins diagrams, muddies images, and destroys illustrations—this app uses advanced, high-fidelity pixel-mapping filters to preserve color relationships while gracefully mapping bright backdrops into elegant, dark, or custom-toned parchment.
+Unlike crude, standard browser inversion—which ruins covers, muddies ink, and destroys illustrations—InkShift uses advanced, high-fidelity pixel-mapping filters to preserve color relationships while gracefully mapping bright backdrops into elegant, dark, or custom-toned sheets.
 
 ***
 
 ## 🌟 What This App Does
 
-- ⚡ **Graceful Color Inversion**: Preserves diagrams, code snippets, and original color illustrations while gracefully darkening background paper.
-- 🔒 **Absolute Local Security**: Your documents never leave your machine! All rendering, conversion, and assembly run entirely inside your browser's local keep. No servers, no tracking, and 100% offline-capable.
-- 🎨 **Alchemical Filter Modes**:
-  - **Smart Twilight (Invert)**: Darkens paper backgrounds while keeping illustrations crisp and non-inverted.
-  - **Monochromatic Charcoal**: Converts your document to highly readable high-contrast black and grey tones.
-  - **Dark Amber / Retro Keep**: Warm amber tones on a deep charcoal backdrop for maximum eye-safe night reading.
-  - **Custom Alchemy**: Fine-tune brightness, contrast, hue-rotation, and select custom parchment and text colors.
-- 📥 **High-Resolution Binding**: Re-compile and export your newly illuminated PDF at customizable resolutions (Standard, High, or Ultra High Definition).
+- ⚡ **Graceful Color Inversion**: Preserves colored splash pages, covers, and original illustration colors while gracefully darkening paper backgrounds.
+- 🔒 **Absolute Local Security**: Your documents never leave your machine! All rendering, conversion, and assembly run entirely inside your browser's local sandbox. No servers, no tracking, and 100% offline-capable.
+- 🎨 **Manga-Themed Presets (Shirokuro 白黒)**:
+  - **InkShift**: Deep newsprint charcoal optimized for manga screentone contrast, preserving full-page splash art.
+  - **Cyber Tokyo**: Deep midnight blue background reminiscent of Neo-Tokyo, with electric cyber-blue highlight ink.
+  - **Classic Tankōbon**: Aged pulpy paper and soft warm manga ink, replicating vintage tankōbon print editions.
+  - **Mecha HUD**: Tactical cockpit screen green glow, from inside a giant piloting suit.
+  - **Neo Noir**: Sleek dark-teal cyberpunk tone, relaxing to the eyes.
+  - **Manga Café**: Rich dark espresso canvas with cozy cream-toned text for hours of peaceful reading.
+- 📥 **High-Resolution Assembly**: Re-compile and export your newly illuminated manga chapters or PDF pages at customizable resolutions (Standard, High, or Max Resolution).
 
 ***
 
 ## 💻 How to Install as an App (PWA)
 
-You don't need an app store! You can install Kelly's Folio Illuminator directly to your computer or mobile device in seconds for a distraction-free, standalone app experience with its own desktop icon.
+You don't need an app store! You can install InkShift directly to your computer or mobile device in seconds for a distraction-free, standalone app experience with its own desktop icon.
 
 ### On Google Chrome & Microsoft Edge (Desktop)
 1. Navigate to your hosted page (e.g., `https://tadd31.github.io/PDF-Converted/`).

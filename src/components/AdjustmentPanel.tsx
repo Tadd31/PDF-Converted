@@ -5,6 +5,7 @@
 
 import { FilterConfig } from '../utils/colorFilter';
 import { Sliders, Sun, Eye, Undo2, RotateCw } from 'lucide-react';
+import { MangaPanel } from './MangaPanel';
 
 interface AdjustmentPanelProps {
   config: FilterConfig;
@@ -28,13 +29,13 @@ export function AdjustmentPanel({ config, onChange }: AdjustmentPanelProps) {
     config.hueRotate !== 0;
 
   return (
-    <div className="space-y-5 bg-[#161616] p-5 rounded-xl border border-white/5 shadow-md">
+    <MangaPanel className="space-y-5 text-black">
       {/* Header */}
-      <div className="flex items-center justify-between pb-2 border-b border-white/10">
+      <div className="flex items-center justify-between pb-2 border-b-3 border-black">
         <div className="flex items-center gap-2">
-          <Sliders size={15} className="text-[#CCFF00]" />
-          <h4 className="text-xs font-black text-white uppercase tracking-widest">
-            Alchemical Refinements
+          <Sliders size={18} className="text-[#FF003C] stroke-[2.5]" />
+          <h4 className="text-sm font-display font-black text-black uppercase tracking-wider manga-slanted">
+            Screentone Ink Adjustments
           </h4>
         </div>
         {isModified && (
@@ -42,9 +43,9 @@ export function AdjustmentPanel({ config, onChange }: AdjustmentPanelProps) {
             id="reset-adjustments-btn"
             type="button"
             onClick={handleReset}
-            className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-[#CCFF00] hover:text-white transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-[#FF003C] hover:text-black transition-colors cursor-pointer"
           >
-            <Undo2 size={11} />
+            <Undo2 size={11} className="stroke-[2.5]" />
             <span>Restore Original</span>
           </button>
         )}
@@ -53,10 +54,10 @@ export function AdjustmentPanel({ config, onChange }: AdjustmentPanelProps) {
       {/* Brightness Slider */}
       <div className="space-y-2">
         <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
-          <span className="text-zinc-400 flex items-center gap-1.5">
-            <Sun size={13} className="text-zinc-400" /> Luminance
+          <span className="text-zinc-800 flex items-center gap-1.5">
+            <Sun size={13} className="text-zinc-800 stroke-[2]" /> Luminance
           </span>
-          <span className={`font-mono ${config.brightness !== 0 ? 'text-[#CCFF00] font-bold' : 'text-zinc-500'}`}>
+          <span className={`font-mono ${config.brightness !== 0 ? 'text-[#FF003C] font-bold' : 'text-zinc-400'}`}>
             {config.brightness > 0 ? `+${config.brightness}` : config.brightness}%
           </span>
         </div>
@@ -67,9 +68,9 @@ export function AdjustmentPanel({ config, onChange }: AdjustmentPanelProps) {
           max="60"
           value={config.brightness}
           onChange={(e) => onChange({ brightness: parseInt(e.target.value) })}
-          className="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#CCFF00]"
+          className="w-full h-1.5 bg-zinc-200 border border-black rounded-none appearance-none cursor-pointer accent-[#FF003C]"
         />
-        <div className="flex justify-between text-[9px] text-zinc-500 px-1 font-mono uppercase tracking-wider">
+        <div className="flex justify-between text-[9px] text-zinc-600 px-1 font-mono uppercase tracking-wider font-bold">
           <span>Darker</span>
           <span>Zero</span>
           <span>Brighter</span>
@@ -79,10 +80,10 @@ export function AdjustmentPanel({ config, onChange }: AdjustmentPanelProps) {
       {/* Contrast Slider */}
       <div className="space-y-2">
         <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
-          <span className="text-zinc-400 flex items-center gap-1.5">
-            <Eye size={13} className="text-zinc-400" /> Starkness
+          <span className="text-zinc-800 flex items-center gap-1.5">
+            <Eye size={13} className="text-zinc-800 stroke-[2]" /> Starkness
           </span>
-          <span className={`font-mono ${config.contrast !== 0 ? 'text-[#CCFF00] font-bold' : 'text-zinc-500'}`}>
+          <span className={`font-mono ${config.contrast !== 0 ? 'text-[#FF003C] font-bold' : 'text-zinc-400'}`}>
             {config.contrast > 0 ? `+${config.contrast}` : config.contrast}%
           </span>
         </div>
@@ -93,9 +94,9 @@ export function AdjustmentPanel({ config, onChange }: AdjustmentPanelProps) {
           max="60"
           value={config.contrast}
           onChange={(e) => onChange({ contrast: parseInt(e.target.value) })}
-          className="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#CCFF00]"
+          className="w-full h-1.5 bg-zinc-200 border border-black rounded-none appearance-none cursor-pointer accent-[#FF003C]"
         />
-        <div className="flex justify-between text-[9px] text-zinc-500 px-1 font-mono uppercase tracking-wider">
+        <div className="flex justify-between text-[9px] text-zinc-600 px-1 font-mono uppercase tracking-wider font-bold">
           <span>Faded</span>
           <span>Zero</span>
           <span>Sharp</span>
@@ -105,10 +106,10 @@ export function AdjustmentPanel({ config, onChange }: AdjustmentPanelProps) {
       {/* Hue Rotate Slider */}
       <div className="space-y-2">
         <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
-          <span className="text-zinc-400 flex items-center gap-1.5">
-            <RotateCw size={13} className="text-zinc-400" /> Chroma Alchemy
+          <span className="text-zinc-800 flex items-center gap-1.5">
+            <RotateCw size={13} className="text-zinc-800 stroke-[2]" /> Chroma Spectrum
           </span>
-          <span className={`font-mono ${config.hueRotate > 0 ? 'text-[#CCFF00] font-bold' : 'text-zinc-500'}`}>
+          <span className={`font-mono ${config.hueRotate > 0 ? 'text-[#FF003C] font-bold' : 'text-zinc-400'}`}>
             {config.hueRotate}°
           </span>
         </div>
@@ -119,7 +120,7 @@ export function AdjustmentPanel({ config, onChange }: AdjustmentPanelProps) {
           max="360"
           value={config.hueRotate}
           onChange={(e) => onChange({ hueRotate: parseInt(e.target.value) })}
-          className="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#CCFF00]"
+          className="w-full h-1.5 bg-zinc-200 border border-black rounded-none appearance-none cursor-pointer accent-[#FF003C]"
           style={{
             background: 'linear-gradient(to right, #ef4444, #f59e0b, #10b981, #06b6d4, #3b82f6, #8b5cf6, #ef4444)'
           }}
@@ -128,9 +129,9 @@ export function AdjustmentPanel({ config, onChange }: AdjustmentPanelProps) {
 
       {/* Grayscale Toggle */}
       {config.mode !== 'grayscale' && config.mode !== 'contrast_bw' && (
-        <div className="flex items-center justify-between pt-3 border-t border-white/10">
-          <label htmlFor="grayscale-toggle" className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 cursor-pointer font-sans">
-            Dull All Hues (Monologue)
+        <div className="flex items-center justify-between pt-3 border-t-3 border-black">
+          <label htmlFor="grayscale-toggle" className="text-[10px] font-bold uppercase tracking-wider text-zinc-800 cursor-pointer font-sans">
+            Mono-tone Overlay (Screentone)
           </label>
           <div className="relative inline-flex items-center">
             <input
@@ -138,12 +139,11 @@ export function AdjustmentPanel({ config, onChange }: AdjustmentPanelProps) {
               type="checkbox"
               checked={config.grayscale}
               onChange={(e) => onChange({ grayscale: e.target.checked })}
-              className="sr-only peer"
+              className="text-[#FF003C] bg-white border-3 border-black w-5 h-5 rounded-none appearance-none checked:bg-[#FF003C] cursor-pointer"
             />
-            <div className="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-zinc-900 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-zinc-500 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#CCFF00] peer-checked:after:bg-black cursor-pointer"></div>
           </div>
         </div>
       )}
-    </div>
+    </MangaPanel>
   );
 }

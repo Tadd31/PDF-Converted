@@ -13,34 +13,73 @@ import {
   Maximize2,
   Minimize2,
   RotateCcw,
-  Download,
-  Image as ImageIcon,
+  Laptop,
 } from 'lucide-react';
 import { FilterConfig, applyPixelFilter } from '../utils/colorFilter';
+import { MangaPanel } from './MangaPanel';
 
 interface PdfViewerProps {
   pdfDoc: any; // PDF.js Document object
   config: FilterConfig;
   currentPage: number;
   setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+  onShowInstallInstructions?: () => void;
 }
 
-export function PdfViewer({ pdfDoc, config, currentPage, setCurrentPage }: PdfViewerProps) {
-  const [zoom, setZoom] = useState<number>(1.25);
+export function PdfViewer({ 
+  pdfDoc, 
+  config, 
+  currentPage, 
+  setCurrentPage,
+  onShowInstallInstructions 
+}: PdfViewerProps) {
+  const [zoom, setZoom] = useState<number>(1.0);
   const [isRendering, setIsRendering] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [prevPage, setPrevPage] = useState<number>(currentPage);
+  const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
+
+  useEffect(() => {
+    if (currentPage > prevPage) {
+      setDirection('forward');
+    } else if (currentPage < prevPage) {
+      setDirection('backward');
+    }
+    setPrevPage(currentPage);
+  }, [currentPage, prevPage]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasVisibleRef = useRef<HTMLCanvasElement>(null);
   const canvasHiddenRef = useRef<HTMLCanvasElement>(null);
   const renderTaskRef = useRef<any>(null);
 
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [stageDimensions, setStageDimensions] = useState({ width: 0, height: 0 });
+  const [pageAspectRatio, setPageAspectRatio] = useState<number>(0.75); // default aspect ratio (portrait)
+
+  // Setup ResizeObserver for responsive canvas/stage sizing
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    const observer = new ResizeObserver((entries) => {
+      if (!entries || entries.length === 0) return;
+      const { width, height } = entries[0].contentRect;
+      setStageDimensions({ width, height });
+    });
+
+    observer.observe(stage);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   // Cached original ImageData for instant slider updates
   const originalImageDataRef = useRef<ImageData | null>(null);
 
   const numPages = pdfDoc ? pdfDoc.numPages : 0;
 
-  // 1. Initial Render of PDF to Hidden Canvas when page or zoom changes
+  // 1. Initial Render of PDF to Hidden Canvas when page changes
   useEffect(() => {
     if (!pdfDoc) return;
 
@@ -58,7 +97,10 @@ export function PdfViewer({ pdfDoc, config, currentPage, setCurrentPage }: PdfVi
         const page = await pdfDoc.getPage(currentPage);
         if (isAborted) return;
 
-        const viewport = page.getViewport({ scale: zoom });
+        // Render at a high-quality fixed scale (1.5) for crispness at all zoom levels
+        const renderScale = 1.5;
+        const viewport = page.getViewport({ scale: renderScale });
+        setPageAspectRatio(viewport.width / viewport.height);
 
         const canvasHidden = canvasHiddenRef.current;
         if (!canvasHidden) return;
@@ -117,7 +159,7 @@ export function PdfViewer({ pdfDoc, config, currentPage, setCurrentPage }: PdfVi
         renderTaskRef.current.cancel();
       }
     };
-  }, [pdfDoc, currentPage, zoom]);
+  }, [pdfDoc, currentPage]); // REMOVED zoom from dependencies for lightning-fast instantaneous scaling!
 
   // 2. Fast/Instant draw function when config (sliders/colors) change
   const applyCurrentFilter = () => {
@@ -161,7 +203,7 @@ export function PdfViewer({ pdfDoc, config, currentPage, setCurrentPage }: PdfVi
   // Zoom helpers
   const zoomIn = () => setZoom((z) => Math.min(3, z + 0.25));
   const zoomOut = () => setZoom((z) => Math.max(0.5, z - 0.25));
-  const resetZoom = () => setZoom(1.25);
+  const resetZoom = () => setZoom(1.0);
 
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
@@ -200,43 +242,63 @@ export function PdfViewer({ pdfDoc, config, currentPage, setCurrentPage }: PdfVi
     document.body.removeChild(link);
   };
 
+  // Calculate baseline fitting width (100% zoom)
+  let baseWidth = 350; // default fallback
+  if (stageDimensions.width > 0) {
+    const isMobile = window.innerWidth < 640;
+    const margin = isMobile ? 16 : 48; // compact margin on mobile to maximize page real estate
+    const targetWidth = stageDimensions.width - margin;
+    
+    // Scale to closely fill the width of the canvas stage
+    baseWidth = targetWidth;
+
+    // Safety checks: ensure it fits nicely but doesn't blow up on massive monitors
+    baseWidth = Math.max(260, Math.min(950, baseWidth));
+  }
+
   return (
-    <div
+    <MangaPanel
       ref={containerRef}
-      className={`flex flex-col h-full bg-zinc-950 border border-white/5 rounded-2xl overflow-hidden relative ${
-        isFullscreen ? 'w-screen h-screen rounded-none border-none' : ''
+      noPadding
+      variant="red"
+      hasScreentone={true}
+      noBorder={isFullscreen}
+      noShadow={isFullscreen}
+      noTransform={isFullscreen}
+      className={`flex flex-col h-full overflow-hidden ${
+        isFullscreen ? 'w-screen h-screen rounded-none z-50 fixed inset-0' : 'relative'
       }`}
     >
       {/* Hidden canvas for original PDF.js rendering */}
       <canvas ref={canvasHiddenRef} className="hidden" />
 
       {/* Viewer toolbar */}
-      <div className="flex flex-wrap items-center justify-between px-5 py-3 bg-zinc-900 border-b border-white/10 z-10 gap-3">
+      <div className="flex flex-wrap items-center justify-between px-5 py-3 bg-white border-b-3 border-black z-10 gap-3">
         {/* Title */}
         <div className="flex items-center gap-2">
           <div>
-            <span className="text-[10px] font-black text-white uppercase tracking-wider block">
+            <span className="text-xs font-display font-black text-black uppercase tracking-wider block leading-none">
               Live Preview Canvas
             </span>
-            <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-tight">
+            <span className="text-[10px] text-zinc-700 font-mono uppercase tracking-tight mt-1 block">
               Scale: {(zoom * 100).toFixed(0)}%
             </span>
           </div>
         </div>
 
         {/* Page Nav controls */}
-        <div className="flex items-center bg-zinc-950 px-3 py-1.5 rounded-xl border border-white/5 gap-2.5 shadow-inner">
+        <div className="flex items-center bg-zinc-100 px-3 py-1.5 rounded-xl border-2 border-black gap-2.5 shadow-inner">
           <button
             id="prev-page-btn"
             onClick={goToPrevPage}
             disabled={currentPage <= 1 || isRendering}
-            className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors disabled:opacity-20 disabled:hover:bg-transparent cursor-pointer"
+            className="p-1 rounded text-zinc-850 hover:text-[#FF003C] hover:bg-zinc-200 transition-colors disabled:opacity-20 disabled:hover:bg-transparent cursor-pointer"
             title="Previous Page"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft size={16} className="stroke-[2.5]" />
           </button>
 
-          <span className="text-xs text-zinc-300 font-bold select-none flex items-center gap-1.5 min-w-[75px] justify-center">
+          <span className="text-xs text-zinc-900 font-bold select-none flex items-center gap-1.5 min-w-[75px] justify-center">
             <input
               type="number"
               value={currentPage}
@@ -248,20 +310,20 @@ export function PdfViewer({ pdfDoc, config, currentPage, setCurrentPage }: PdfVi
                   setCurrentPage(val);
                 }
               }}
-              className="w-10 bg-zinc-900 text-[#CCFF00] text-center rounded-md border border-white/10 px-1 py-0.5 text-xs font-mono font-bold focus:border-[#CCFF00] focus:outline-none"
+              className="w-10 bg-white text-[#FF003C] text-center rounded border-2 border-black px-1 py-0.5 text-xs font-mono font-black focus:border-[#FF003C] focus:outline-none"
             />
-            <span className="text-zinc-600 font-mono">/</span>
-            <span className="font-mono text-zinc-400">{numPages}</span>
+            <span className="text-zinc-400 font-mono">/</span>
+            <span className="font-mono text-zinc-800">{numPages}</span>
           </span>
 
           <button
             id="next-page-btn"
             onClick={goToNextPage}
             disabled={currentPage >= numPages || isRendering}
-            className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors disabled:opacity-20 disabled:hover:bg-transparent cursor-pointer"
+            className="p-1 rounded text-zinc-855 hover:text-[#FF003C] hover:bg-zinc-200 transition-colors disabled:opacity-20 disabled:hover:bg-transparent cursor-pointer"
             title="Next Page"
           >
-            <ChevronRight size={16} />
+            <ChevronRight size={16} className="stroke-[2.5]" />
           </button>
         </div>
 
@@ -272,20 +334,20 @@ export function PdfViewer({ pdfDoc, config, currentPage, setCurrentPage }: PdfVi
             id="zoom-out-btn"
             onClick={zoomOut}
             disabled={zoom <= 0.5}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all cursor-pointer"
+            className="p-1.5 rounded-lg text-zinc-800 hover:text-black hover:bg-zinc-100 active:scale-90 transition-all cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
             title="Zoom Out"
           >
-            <ZoomOut size={15} />
+            <ZoomOut size={16} className="stroke-[2]" />
           </button>
 
           {/* Zoom Level Reset */}
           <button
             id="zoom-reset-btn"
             onClick={resetZoom}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all cursor-pointer"
+            className="p-1.5 rounded-lg text-zinc-800 hover:text-black hover:bg-zinc-100 active:scale-90 transition-all cursor-pointer"
             title="Reset Zoom"
           >
-            <RotateCcw size={14} />
+            <RotateCcw size={15} className="stroke-[2]" />
           </button>
 
           {/* Zoom In */}
@@ -293,32 +355,33 @@ export function PdfViewer({ pdfDoc, config, currentPage, setCurrentPage }: PdfVi
             id="zoom-in-btn"
             onClick={zoomIn}
             disabled={zoom >= 3.0}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all cursor-pointer"
+            className="p-1.5 rounded-lg text-zinc-800 hover:text-black hover:bg-zinc-100 active:scale-90 transition-all cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
             title="Zoom In"
           >
-            <ZoomIn size={15} />
+            <ZoomIn size={16} className="stroke-[2]" />
           </button>
 
-          <div className="w-px h-5 bg-white/10 mx-1.5" />
+          <div className="w-0.5 h-5 bg-black mx-1.5" />
 
-          {/* Download active page image */}
+          {/* Install on Desktop Info Button */}
           <button
-            id="download-page-img-btn"
-            onClick={downloadActivePageImage}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-[#CCFF00] hover:bg-zinc-800 transition-all cursor-pointer"
-            title="Download This Page as PNG Image"
+            id="install-desktop-btn"
+            onClick={onShowInstallInstructions}
+            className="p-1.5 rounded-lg text-zinc-850 hover:text-[#FF003C] hover:bg-zinc-100 transition-all cursor-pointer flex items-center gap-1"
+            title="Install on your desktop"
           >
-            <ImageIcon size={15} />
+            <Laptop size={15} className="stroke-[2.5]" />
+            <span className="text-[10px] font-black font-mono hidden sm:inline uppercase tracking-wider">Install App</span>
           </button>
 
           {/* Fullscreen Toggle */}
           <button
             id="fullscreen-btn"
             onClick={toggleFullscreen}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all cursor-pointer"
+            className="p-1.5 rounded-lg text-zinc-800 hover:text-black hover:bg-zinc-100 transition-all cursor-pointer"
             title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
           >
-            {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+            {isFullscreen ? <Minimize2 size={16} className="stroke-[2]" /> : <Maximize2 size={16} className="stroke-[2]" />}
           </button>
         </div>
       </div>
@@ -326,7 +389,10 @@ export function PdfViewer({ pdfDoc, config, currentPage, setCurrentPage }: PdfVi
       {/* Main Container - Canvas Stage */}
       <div className="flex flex-1 overflow-hidden relative">
         {/* Preview Canvas Stage */}
-        <div className="flex-1 bg-zinc-950 flex items-center justify-center p-6 overflow-auto min-h-0 relative grid-bg">
+        <div ref={stageRef} className="flex-1 bg-zinc-100 flex items-center justify-center p-6 overflow-auto min-h-0 relative">
+          {/* Screentone background pattern on stage */}
+          <div className="absolute inset-0 opacity-[0.05] screentone-bg pointer-events-none" />
+
           {/* Loading Indicator Overlay */}
           <AnimatePresence>
             {isRendering && (
@@ -334,22 +400,51 @@ export function PdfViewer({ pdfDoc, config, currentPage, setCurrentPage }: PdfVi
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 0.95 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-zinc-950/90 flex flex-col items-center justify-center z-10"
+                className="absolute inset-0 bg-zinc-100/90 flex flex-col items-center justify-center z-10"
               >
-                <div className="w-12 h-12 border-4 border-[#CCFF00] border-t-transparent rounded-full animate-spin mb-4" />
-                <span className="text-xs font-black uppercase tracking-widest text-white font-mono">
-                  Compiling Pixels...
+                <div className="w-12 h-12 border-4 border-[#FF003C] border-t-transparent rounded-full animate-spin mb-4" />
+                <span className="text-xs font-display font-black uppercase tracking-widest text-black">
+                  COMPILING PIXELS...
                 </span>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Actual Canvas rendering */}
-          <div className="shadow-[0_0_50px_rgba(0,0,0,0.8)] rounded-2xl border-4 border-[#1a1a1a] overflow-hidden bg-white max-w-full">
-            <canvas ref={canvasVisibleRef} className="block max-w-full h-auto" />
+          {/* Actual Canvas rendering with snappy high-impact transition */}
+          <div 
+            className="flex items-center justify-center"
+            style={{ perspective: 1200 }}
+          >
+            <motion.div
+              key={currentPage}
+              initial={{ 
+                x: direction === 'forward' ? 120 : -120, 
+                rotateY: direction === 'forward' ? 15 : -15, 
+                opacity: 0.4,
+                scale: 0.95 
+              }}
+              animate={{ 
+                x: 0, 
+                rotateY: 0, 
+                opacity: 1,
+                scale: 1 
+              }}
+              transition={{
+                type: 'spring',
+                stiffness: 350, // snappy fast-in
+                damping: 24,    // quick solid stop
+              }}
+              className="rounded-lg border-6 border-black overflow-hidden bg-white manga-shadow-red"
+              style={{ 
+                transformStyle: 'preserve-3d',
+                width: `${zoom * baseWidth}px`
+              }}
+            >
+              <canvas ref={canvasVisibleRef} className="block w-full h-auto" />
+            </motion.div>
           </div>
         </div>
       </div>
-    </div>
+    </MangaPanel>
   );
 }
