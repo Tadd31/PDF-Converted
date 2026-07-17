@@ -13,7 +13,6 @@ import {
   Maximize2,
   Minimize2,
   RotateCcw,
-  Laptop,
 } from 'lucide-react';
 import { FilterConfig, applyPixelFilter } from '../utils/colorFilter';
 import { MangaPanel } from './MangaPanel';
@@ -362,17 +361,6 @@ export function PdfViewer({
           </button>
 
           <div className="w-0.5 h-5 bg-black mx-1.5" />
-
-          {/* Install on Desktop Info Button */}
-          <button
-            id="install-desktop-btn"
-            onClick={onShowInstallInstructions}
-            className="p-1.5 rounded-lg text-zinc-850 hover:text-[#FF003C] hover:bg-zinc-100 transition-all cursor-pointer flex items-center gap-1"
-            title="Install on your desktop"
-          >
-            <Laptop size={15} className="stroke-[2.5]" />
-            <span className="text-[10px] font-black font-mono hidden sm:inline uppercase tracking-wider">Install App</span>
-          </button>
 
           {/* Fullscreen Toggle */}
           <button
